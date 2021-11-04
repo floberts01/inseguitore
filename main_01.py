@@ -8,30 +8,30 @@ ser=servopos()
 
 face_cascade= cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 
+#nell'originale caricava la videata come larga 320 e alta 240 pixel
+#da cui il 160 e il 120 del Px e Py
 Px,Ix,Dx=-1/160,0,0
 Py,Iy,Dy=-0.2/120,0,0
 integral_x,integral_y=0,0
 differential_x,differential_y=0,0
 prev_x,prev_y=0,0
 
-#width,height=320,240
-width,height=1280,720
+font = cv2.FONT_HERSHEY_SIMPLEX
 
+height=480
+height2=240
+
+width=640
+width2=320
 
 cam = cv2.VideoCapture(0)
-#camera = PiCamera(1)
-#camera.resolution = (width,height)
-#camera.framerate = 30
-#rawCapture = PiRGBArray(camera, size=(width,height))
-#time.sleep(1)
+time.sleep(2)
 
-#for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
 while (True):
     ret, frame = cam.read()
-    #image = frame.array
     frame=cv2.flip(frame,1)
     gray=cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)    
-
+    #print(frame.shape)
     ser.setdcx(0)
     ser.setdcy(0)
     
@@ -40,14 +40,18 @@ while (True):
     c=0
     for(x,y,w,h) in faces:
         c+=1
-        if(c>1):
+        if(c>1): #esco all aprima faccia che trovo
             break
         #centre of face
         face_centre_x=x+w/2
+        #print('face_centre_x= ' + str(face_centre_x))
         face_centre_y=y+h/2
-        #pixels to move 
-        error_x=160-face_centre_x
-        error_y=120-face_centre_y
+        #print('face_centre_y= ' + str(face_centre_y))
+        #pixels to move rispetto a centro del frame
+        #error_x=160-face_centre_x
+        error_x=width/2-face_centre_x
+        #error_y=120-face_centre_y
+        error_y=height/2-face_centre_y
         
         integral_x=integral_x+error_x
         integral_y=integral_y+error_y
@@ -85,11 +89,25 @@ while (True):
             
         if(c==1):
             frame=cv2.rectangle(frame,(x,y),(x+w,y+h),(255,0,0),6)
+            testoX= 'pixelerrorx='+ str(error_x) +' valx=' + str(valx)
+            testoY= 'pixelerrory='+ str(error_y) +' valy=' + str(valy)
+            frame=cv2.putText(frame, testoX,(50,50), font, 0.5, (255, 255, 0), 1, cv2.LINE_AA)
+            frame=cv2.putText(frame, testoY,(50,70), font, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
+            
+            #centro faccia
+            frame=cv2.line(frame, (x,y),(x+w,y+h), (0,0,255),1)
+            frame=cv2.line(frame, (x,y+h),(x+w,y), (0,0,255),1)
+            frame=cv2.circle(frame, (int(x+w/2),int(y+h/2)), 5, (0, 0, 255), -1)
+            
+            #centro schermo
+            frame=cv2.line(frame, (width2,0),(width2,height), (0,255,255),1)
+            frame=cv2.line(frame, (0,height2),(width,height2), (0,255,255),1)
 
-    cv2.imshow('frame',frame) #display image
+            
+    
+    cv2.imshow('titolo finestra',frame) #display image
     
     key = cv2.waitKey(1) & 0xFF
- #   rawCapture.truncate(0)
     if key == ord("q"):
         break
 
