@@ -1,3 +1,13 @@
+# import necessary packages
+import imutils
+import cv2
+
+class ObjCenter:
+	def __init__(self, haarPath):
+		# load OpenCV's Haar cascade face detector
+		self.detector = cv2.CascadeClassifier(haarPath)
+	
+	
 	def update(self, frame, frameCenter):
 		# convert the frame to grayscale
 		gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
